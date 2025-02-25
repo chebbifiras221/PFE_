@@ -1,58 +1,109 @@
-import speech_recognition as sr
-import pyttsx3
-from datetime import datetime
+import whisper
+import pyaudio
+import wave
+import numpy as np
 import os
+import time
+from datetime import datetime
+import pyttsx3
+
+# Fix Windows path handling for Whisper
+import sys
+import ctypes
+
+if sys.platform == "win32":
+    # Bypass Unix-specific checks
+    ctypes.CDLL._name = "_not_a_real_path_.dll" 
+
+# Now import Whisper
+import whisper
 
 class SpeechProcessor:
     def __init__(self):
-        self.recognizer = sr.Recognizer()           # Initialize speech recognition
-        self.engine = pyttsx3.init()                # Initialize text-to-speech engine
-        self.audio_dir = "audio_history"            # The Directory to save audio files
-        os.makedirs(self.audio_dir, exist_ok=True)  # Create directory if it doesn't exist
+        self.engine = pyttsx3.init()
+        self.audio_dir = "audio_history"
+        self.model = whisper.load_model("base")  # Load Whisper model
+        os.makedirs(self.audio_dir, exist_ok=True)
+        
+        # Audio recording parameters
+        self.FORMAT = pyaudio.paInt16
+        self.CHANNELS = 1
+        self.RATE = 16000
+        self.CHUNK = 512
+        self.SILENCE_TIMEOUT = 1.5  # Seconds of silence to stop recording
 
     def speech_to_text(self):
-        self.listening = True       # Indicates whether the chatbot is currently listening
+        """Record audio and transcribe using Whisper"""
+        audio = pyaudio.PyAudio()
+        stream = audio.open(
+            format=self.FORMAT,
+            channels=self.CHANNELS,
+            rate=self.RATE,
+            input=True,
+            frames_per_buffer=self.CHUNK
+        )
+
         try:
-            # Create a microphone object to capture audio
-            with sr.Microphone() as source:
-                # Print a message to the user(in the terminal), indicating that the ai is listening
-                print("Listening...")
-                # Adjust the microphone sensitivity to the ambient noise level
-                self.recognizer.adjust_for_ambient_noise(source)
-                # Record audio from the microphone
-                audio = self.recognizer.listen(source)
-            # Attempt to recognize the speech
-            return self.recognizer.recognize_google(audio)
-        except sr.WaitTimeoutError:
-            # If there is a wait timeout error, return None
-            return None
+            print("Listening...")
+            frames = []
+            silent_chunks = 0
+            threshold = 500  # Audio threshold for silence detection
+
+            while True:
+                data = stream.read(self.CHUNK)
+                frames.append(data)
+                audio_data = np.frombuffer(data, dtype=np.int16)
+                
+                # Check for silence
+                if np.abs(audio_data).mean() < threshold:
+                    silent_chunks += 1
+                    if silent_chunks > self.SILENCE_TIMEOUT * (self.RATE/self.CHUNK):
+                        break
+                else:
+                    silent_chunks = 0
+
         except Exception as e:
-            # If there is an unexpected error, print its message and return 'None'
-            print(f"Speech error: {str(e)}")
+            print(f"Recording error: {str(e)}")
             return None
-        except sr.UnknownValueError:
-            # If the speech is unknown, return a sorry message
-            return "Sorry, I couldn't understand that."
-        except sr.RequestError:
-            # If there is a request error, return another sorry message
-            return "Could not request results. Check your internet connection."
         finally:
-            # After the speech recognition attempt, set listening back to False
-            self.listening = False
+            # Cleanup recording resources
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
+
+            # Save temporary audio file
+            filename = os.path.join(self.audio_dir, f"temp_{int(time.time())}.wav")
+            self._save_wav(frames, filename)
+            
+            # Transcribe using Whisper
+            return self._transcribe_audio(filename)
+
+    def _save_wav(self, frames, filename):
+        """Save recorded audio to WAV file"""
+        with wave.open(filename, 'wb') as wf:
+            wf.setnchannels(self.CHANNELS)
+            wf.setsampwidth(pyaudio.PyAudio().get_sample_size(self.FORMAT))
+            wf.setframerate(self.RATE)
+            wf.writeframes(b''.join(frames))
+
+    def _transcribe_audio(self, filename):
+        """Transcribe audio file using Whisper"""
+        try:
+            result = self.model.transcribe(filename)
+            os.remove(filename)  # Cleanup temp file
+            return result["text"].strip()
+        except Exception as e:
+            print(f"Transcription error: {str(e)}")
+            return None
 
     def text_to_speech(self, text):
-        """Basically, Saves each response with unique timestamp(day and time)"""
-        # Get the current datetime and format it as a string
+        """Convert text to speech with timestamped filename"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # Create the filename by combining the timestamp and the filename prefix
         filename = os.path.join(self.audio_dir, f"response_{timestamp}.mp3")
-        # Save the text-to-speech output to a file using the filename
         self.engine.save_to_file(text, filename)
-        # Run the text-to-speech engine to generate the audio
         self.engine.runAndWait()
-        # Return the filename of the saved audio
         return filename
 
     def cleanup(self):
-        # Reset speech components
+        """Reset speech components"""
         self.engine.stop()
