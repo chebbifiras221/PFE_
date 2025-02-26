@@ -12,7 +12,7 @@ import sys
 import ctypes
 
 if sys.platform == "win32":
-    # Bypass Unix-specific checks
+    # Bypass Unix-specific checks (and for some reason important for handeling Whisper for Windows)
     ctypes.CDLL._name = "_not_a_real_path_.dll" 
 
 # Now import Whisper
@@ -30,7 +30,7 @@ class SpeechProcessor:
         self.CHANNELS = 1
         self.RATE = 16000
         self.CHUNK = 512
-        self.SILENCE_TIMEOUT = 1.5  # Seconds of silence to stop recording
+        self.SILENCE_TIMEOUT = 2      # Seconds of silence to stop recording
 
     def speech_to_text(self):
         """Record audio and transcribe using Whisper"""

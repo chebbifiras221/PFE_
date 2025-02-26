@@ -21,12 +21,13 @@ class Chatbot:
         user_input = self.speech_processor.speech_to_text()
         
         if user_input:
-            # Terminal display
-            print(f"User: {user_input}")
-            
             # Get and display response
             response = self.gemini.generate_response(user_input)
-            audio_path = self.speech_processor.text_to_speech(response)
+
+            # Generate audio only for valid responses, and leaving it empty for invalid responses
+            audio_path = None
+            if not response.startswith("Rate limit") and not response.startswith("I specialize"):
+                audio_path = self.speech_processor.text_to_speech(response)
             
             # Browser display
             st.session_state.conversation.append(("user", user_input)) # Store user input
