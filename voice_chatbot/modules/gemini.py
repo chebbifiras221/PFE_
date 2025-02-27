@@ -18,16 +18,21 @@ class GeminiModel:
         self.last_call_time = 0
 
     def generate_response(self, prompt):
+        # Store the current time
         current_time = time.time()
-        if current_time - self.last_call_time < 2:  # Avoid rapid consecutive calls
+        # Check for rate limiting (avoiding rapid consecutive calls)
+        if current_time - self.last_call_time < 2:
             return "Rate limit: Please wait before making another request."
+        # Update the last call time
         self.last_call_time = current_time
         
         # Add validation check first
         if not self._validate_question(prompt):
             return "I specialize in programming help. Ask me about code-related topics!"
 
+        # Call the Gemini model to generate a response using the prompt
         response = self.model.generate_content(prompt)
+        # Return the generated text if a response is received, otherwise return an error message
         return response.text if response else "Error generating response."
     
     def _validate_question(self, text: str) -> bool:
@@ -60,8 +65,8 @@ class GeminiModel:
         response = self.model.generate_content(
             validation_prompt,
             generation_config={
-                "temperature": 0.0, # A temperature of 0.0 means that the model will generate text in a deterministic way, without any randomness or creativity.
-                "max_output_tokens": 1 # Only respond with a single token, either "true" or "false"
+                "temperature": 0.0,         # A temperature of 0.0 means that the model will generate text in a deterministic way, without any randomness or creativity.
+                "max_output_tokens": 1      # Only respond with a single token, either "true" or "false"
             }
         )
         return "true" in response.text.lower().strip()

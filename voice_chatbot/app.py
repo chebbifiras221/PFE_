@@ -36,10 +36,10 @@ with col2:
 # Display conversation history 
 st.markdown("### Conversation History")
 for entry in st.session_state.get('conversation', []):  # Iterate over each entry in the conversation history stored in session state
-    if entry[0] == "user":                      # Check if the entry was made by the user
-        st.markdown(f"**You:** {entry[1]}")     # Display the user's input
+    if entry[0] == "user":                              # Check if the entry was made by the user
+        st.markdown(f"**You:** {entry[1]}")             # Display the user's input
 
-    elif entry[0] == "bot":                     # Check if the entry was made by the bot
-        st.markdown(f"**AI:** {entry[1]}")      # Display the bot's response
-        st.audio(entry[2])                      # Play the audio file associated with the bot's response
-        st.caption(f"Audio file: {entry[2]}")   # Display a caption, at the buttom, with the audio file path
+    elif entry[0] == "bot":                             # Check if the entry was made by the bot
+        st.markdown(f"**AI:** {entry[1]}")              # Display the bot's response
+        st.audio(entry[2])                              # Play the audio file associated with the bot's response
+        st.caption(f"Audio file: {entry[2]}")           # Display a caption, at the buttom, with the audio file path
