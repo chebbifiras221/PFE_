@@ -96,14 +96,14 @@ class SpeechProcessor:
             print(f"Transcription error: {str(e)}")
             return None
 
-    def text_to_speech(self, text, accent='com'):
+    def text_to_speech(self, text, accent='com'): 
         """Convert text to speech with Google TTS and timestamped filename"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = os.path.join(self.audio_dir, f"response_{timestamp}.mp3")
         
         try:
             # Generate speech with gTTS (lang='en' for English, tld='com' for American accent)
-            tts = gTTS(text=text, lang='en', tld='com')
+            tts = gTTS(text=text, lang='en', tld=accent)
             tts.save(filename)  # Save to file
             return filename
         except requests.ConnectionError:
