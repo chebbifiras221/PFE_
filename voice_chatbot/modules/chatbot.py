@@ -22,7 +22,7 @@ class Chatbot:
             if not response.startswith("Rate limit") and not response.startswith("I specialize"):
                 audio_path = self.speech_processor.text_to_speech(response)
             
-            st.session_state.conversation.append(("user", user_input))
+            st.session_state.conversation.append(("user", user_input, None))
             st.session_state.conversation.append(("bot", response, audio_path))
             
             print(f"User: {user_input}")
@@ -33,3 +33,11 @@ class Chatbot:
     def stop_chat(self):
         self.speech_processor.cleanup()
         st.session_state.chat_active = False
+    
+    def process_text_input(self, text: str):
+        """Handle direct text input"""
+        if not text.strip():
+            return "Please enter a valid question"
+        
+        # Reuse your existing Gemini response logic
+        return self.gemini.generate_response(text)

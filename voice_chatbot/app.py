@@ -3,6 +3,7 @@ from modules.chatbot import Chatbot
 
 st.title("AI Voice Chatbot") # Title
 
+
 # Check if the session state has a key 'chatbot'
 # If it doesn't, it will be created and initialized with a Chatbot object
 # This is so that the chatbot only needs to be initialized once
@@ -11,6 +12,14 @@ if 'chatbot' not in st.session_state:
     st.session_state.chatbot = Chatbot()
     # Set the chat_active flag to False, indicating the chat is not active
     st.session_state.chat_active = False
+
+user_text = st.chat_input("Or type your question here...")
+if user_text:
+    # Process text input
+    response = st.session_state.chatbot.process_text_input(user_text)
+    audio_path = st.session_state.chatbot.speech_processor.text_to_speech(response)
+    st.session_state.conversation.append(("user", user_text, None))  # None for no audio
+    st.session_state.conversation.append(("bot", response, audio_path))
 
 # Split the screen into two columns
 col1, col2 = st.columns(2)
@@ -37,9 +46,13 @@ with col2:
 st.markdown("### Conversation History")
 for entry in st.session_state.get('conversation', []):  # Iterate over each entry in the conversation history stored in session state
     if entry[0] == "user":                              # Check if the entry was made by the user
-        st.markdown(f"**You:** {entry[1]}")             # Display the user's input
+        col = st.chat_message("user")
+        col.markdown(f"**You:** {entry[1]}")
+        if entry[2]:  # Show microphone icon for voice inputs
+            col.caption("🎤 Voice input")
 
     elif entry[0] == "bot":                             # Check if the entry was made by the bot
-        st.markdown(f"**AI:** {entry[1]}")              # Display the bot's response
-        st.audio(entry[2])                              # Play the audio file associated with the bot's response
-        st.caption(f"Audio file: {entry[2]}")           # Display a caption, at the buttom, with the audio file path
+        col = st.chat_message("assistant")
+        col.markdown(f"**AI:** {entry[1]}")
+        if entry[2]:  # Only show audio for voice responses
+            col.audio(entry[2])         # Display a caption, at the buttom, with the audio file path

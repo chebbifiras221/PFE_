@@ -16,9 +16,6 @@ if sys.platform == "win32":
     # Bypass Unix-specific checks (important for handling Whisper on Windows)
     ctypes.CDLL._name = "_not_a_real_path_.dll"
 
-# Now import Whisper
-import whisper
-
 class SpeechProcessor:
     def __init__(self):
         self.audio_dir = "audio_history"
@@ -30,7 +27,7 @@ class SpeechProcessor:
         self.CHANNELS = 1
         self.RATE = 16000
         self.CHUNK = 512
-        self.SILENCE_TIMEOUT = 2  # Seconds of silence to stop recording
+        self.SILENCE_TIMEOUT = 5  # Seconds of silence to stop recording
 
     def speech_to_text(self):
         """Record audio and transcribe using Whisper"""
@@ -105,6 +102,7 @@ class SpeechProcessor:
             # Generate speech with gTTS (lang='en' for English, tld='com' for American accent)
             tts = gTTS(text=text, lang='en', tld=accent)
             tts.save(filename)  # Save to file
+            
             return filename
         except requests.ConnectionError:
             print("Network error: Could not connect to TTS service.")

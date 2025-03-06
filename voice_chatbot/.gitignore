@@ -1,5 +1,6 @@
 .venv/
 __pycache__/
+audio_history/
 *.pyc
 *.pyo
 *.pyd
