@@ -131,13 +131,7 @@ class SpeechProcessor:
             timestamp = int(time.time())
             filename = self.audio_dir / f"input_{timestamp}.wav"
             self._save_wav(frames, filename)
-
-            # Return both text and audio file path
-            transcription = self._transcribe_audio(filename)
-            return {
-                "text": transcription,
-                "audio_file": str(filename)
-            }
+            return self._transcribe_audio(filename)
         return None
             
     def _list_audio_devices(self, audio):
@@ -176,6 +170,13 @@ class SpeechProcessor:
         except Exception as e:
             logger.error(f"Transcription error: {str(e)}")
             return None
+        finally:
+            # Keep recordings for debugging if needed
+            if logger.level > logging.DEBUG:
+                try:
+                    os.remove(filename)
+                except:
+                    pass
 
     def text_to_speech(self, text, accent='com', speed=1.0):
         """
@@ -395,30 +396,3 @@ class SpeechProcessor:
             text = re.sub(pattern, replacement, text)
 
         return text
-    
-    def play_audio(self, audio_file):
-        """
-        Play an audio file of the user using the default system audio player.
-        
-        Args:
-            audio_file: Path to the audio file to play
-        """
-        try:
-            import platform
-            import subprocess
-            
-            system = platform.system()
-            
-            if system == 'Darwin':  # macOS
-                subprocess.run(['afplay', audio_file], check=True)
-            elif system == 'Windows':
-                import winsound
-                winsound.PlaySound(audio_file, winsound.SND_FILENAME)
-            else:  # Linux and others
-                subprocess.run(['aplay', audio_file], check=True)
-                
-            logger.info(f"Played audio file: {audio_file}")
-            return True
-        except Exception as e:
-            logger.error(f"Error playing audio: {e}")
-            return False

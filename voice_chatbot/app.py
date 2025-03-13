@@ -49,7 +49,6 @@ for entry in st.session_state.get('conversation', []):  # Iterate over each entr
         col = st.chat_message("user")
         col.markdown(f"**You:** {entry[1]}")
         if entry[2]:  # Show microphone icon for voice inputs
-            col.audio(entry[2])
             col.caption("🎤 Voice input")
 
     elif entry[0] == "bot":                             # Check if the entry was made by the bot

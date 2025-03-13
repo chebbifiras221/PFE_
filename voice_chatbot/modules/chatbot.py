@@ -14,19 +14,16 @@ class Chatbot:
 
     def chat(self):
         """Handle single interaction cycle"""
-        result = self.speech_processor.speech_to_text()
+        user_input = self.speech_processor.speech_to_text()
         
-        if result and result["text"]:
-            user_input = result["text"]
-            audio_path = result["audio_file"]
-
+        if user_input:
             response = self.gemini.generate_response(user_input)
-            response_audio = None
+            audio_path = None
             if not response.startswith("Rate limit") and not response.startswith("I specialize"):
-                response_audio = self.speech_processor.text_to_speech(response)
+                audio_path = self.speech_processor.text_to_speech(response)
             
-            st.session_state.conversation.append(("user", user_input, audio_path))
-            st.session_state.conversation.append(("bot", response, response_audio))
+            st.session_state.conversation.append(("user", user_input, None))
+            st.session_state.conversation.append(("bot", response, audio_path))
             
             print(f"User: {user_input}")
             print(f"AI: {response} | Audio: {audio_path}")
