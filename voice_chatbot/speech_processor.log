@@ -1,0 +1,24 @@
+2025-03-12 12:51:17,825 - SpeechProcessor - INFO - Loading Whisper model: base
+2025-03-12 12:51:41,965 - SpeechProcessor - INFO - Starting background cleanup of files older than 7 days
+2025-03-12 12:51:53,877 - SpeechProcessor - INFO - Listening...
+2025-03-12 12:51:59,028 - SpeechProcessor - INFO - Transcribing audio_history\input_1741823518.wav
+2025-03-12 12:54:07,346 - SpeechProcessor - INFO - Loading Whisper model: base
+2025-03-12 12:54:21,507 - SpeechProcessor - INFO - Listening...
+2025-03-12 12:54:23,395 - SpeechProcessor - INFO - Starting background cleanup of files older than 7 days
+2025-03-12 12:54:25,704 - SpeechProcessor - INFO - Transcribing audio_history\input_1741823665.wav
+2025-03-12 12:54:41,622 - SpeechProcessor - INFO - Cleaning up resources
+2025-03-12 13:26:47,444 - SpeechProcessor - INFO - Loading Whisper model: base
+2025-03-12 13:27:02,624 - SpeechProcessor - INFO - Starting background cleanup of files older than 7 days
+2025-03-12 13:27:25,870 - SpeechProcessor - INFO - Listening...
+2025-03-12 13:27:30,455 - SpeechProcessor - INFO - Transcribing audio_history\input_1741825650.wav
+2025-03-12 13:27:41,597 - SpeechProcessor - INFO - Cleaning up resources
+2025-03-12 13:28:05,486 - SpeechProcessor - INFO - Listening...
+2025-03-12 13:28:10,272 - SpeechProcessor - INFO - Transcribing audio_history\input_1741825690.wav
+2025-03-12 13:28:20,432 - SpeechProcessor - INFO - Cleaning up resources
+2025-03-12 13:28:29,846 - SpeechProcessor - INFO - Listening...
+2025-03-12 13:28:34,874 - SpeechProcessor - INFO - Transcribing audio_history\input_1741825714.wav
+2025-03-12 13:28:43,711 - SpeechProcessor - INFO - Cleaning up resources
+2025-03-12 13:28:48,263 - SpeechProcessor - INFO - Listening...
+2025-03-12 13:28:54,114 - SpeechProcessor - INFO - Transcribing audio_history\input_1741825733.wav
+2025-03-12 13:30:02,522 - SpeechProcessor - INFO - Text-to-speech saved to audio_history\response_20250312_132944.mp3
+2025-03-12 13:30:02,522 - SpeechProcessor - INFO - Cleaning up resources
