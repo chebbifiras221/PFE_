@@ -4,3 +4,4 @@ audio_history/
 *.pyc
 *.pyo
 *.pyd
+speech_processor.log
