@@ -52,12 +52,9 @@ class SpeechProcessor:
         self.FORMAT = pyaudio.paInt16
         self.CHANNELS = 1
         self.RATE = 16000
-        self.CHUNK = 1024  # Increased for better performance
-        self.SILENCE_TIMEOUT = 2.5  # Reduced for faster response
-        self.SILENCE_THRESHOLD = 10  # Configurable threshold
-        
-        # Background cleanup for old audio files
-        threading.Thread(target=self._cleanup_old_files, daemon=True).start()
+        self.CHUNK = 1024
+        self.SILENCE_TIMEOUT = 2.5
+        self.SILENCE_THRESHOLD = 10
 
     def speech_to_text(self, timeout=30, device_index=None):
         """

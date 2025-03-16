@@ -12,14 +12,61 @@ if 'chatbot' not in st.session_state:
     st.session_state.chatbot = Chatbot()
     # Set the chat_active flag to False, indicating the chat is not active
     st.session_state.chat_active = False
+    st.session_state.show_history = False
+
+# Add history controls to sidebar
+with st.sidebar:
+    st.markdown("### Conversation History Controls")
+    
+    # Delete all history button with confirmation
+    if st.button("Delete All History"):
+        if st.session_state.get('confirm_delete_all', False):
+            if st.session_state.chatbot.history_manager.delete_all_history():
+                st.success("All history deleted successfully!")
+                st.session_state.conversation = []  # Clear current conversation
+            else:
+                st.error("Failed to delete history")
+            st.session_state.confirm_delete_all = False
+        else:
+            st.session_state.confirm_delete_all = True
+            st.warning("Are you sure? Click again to confirm.")
+    
+    # Show history toggle
+    show_history = st.checkbox("Show Conversation History")
+
+if show_history:
+    st.sidebar.markdown("### Past Conversations")
+    # Get all conversations
+    history = st.session_state.chatbot.history_manager.get_all_conversations()
+    
+    for conv in history:
+        with st.sidebar.expander(f"Conversation from {conv['timestamp'][:16]}"):
+            # Add delete button for this conversation
+            if st.button("Delete This Conversation", key=f"del_{conv['timestamp']}"):
+                if st.session_state.chatbot.history_manager.delete_conversation(conv['timestamp']):
+                    st.success("Conversation deleted!")
+                    st.rerun()  # Refresh the page
+                else:
+                    st.error("Failed to delete conversation")
+            
+            # Display conversation contents
+            for msg in conv['messages']:
+                role_icon = "🧑" if msg['role'] == "user" else "🤖"
+                st.markdown(f"{role_icon} **{msg['role'].title()}:** {msg['content']}")
+                if msg['audio_file']:
+                    st.audio(msg['audio_file'])
 
 user_text = st.chat_input("Or type your question here...")
 if user_text:
     # Process text input
     response = st.session_state.chatbot.process_text_input(user_text)
-    audio_path = st.session_state.chatbot.speech_processor.text_to_speech(response)
-    st.session_state.conversation.append(("user", user_text, None))  # None for no audio
-    st.session_state.conversation.append(("bot", response, audio_path))
+    
+    # Update session state conversation for display
+    current_conversation = [
+        ("user", user_text, None),
+        ("bot", response, None)  # Audio path will be added by process_text_input
+    ]
+    st.session_state.conversation.extend(current_conversation)
 
 # Split the screen into two columns
 col1, col2 = st.columns(2)

@@ -1,11 +1,13 @@
 from modules.speech import SpeechProcessor
 from modules.gemini import GeminiModel
+from modules.history_manager import HistoryManager
 import streamlit as st
 
 class Chatbot:
     def __init__(self):
         self.speech_processor = SpeechProcessor()  # Initialize speech processor module
         self.gemini = GeminiModel()               # Initialize Gemini AI model
+        self.history_manager = HistoryManager()   # Initialize history manager
         self._init_session_state()                # Initialize session state with conversation history
 
     def _init_session_state(self):
@@ -25,8 +27,17 @@ class Chatbot:
             if not response.startswith("Rate limit") and not response.startswith("I specialize"):
                 response_audio = self.speech_processor.text_to_speech(response)
             
-            st.session_state.conversation.append(("user", user_input, audio_path))
-            st.session_state.conversation.append(("bot", response, response_audio))
+            # Create a new conversation list for this interaction
+            current_conversation = [
+                ("user", user_input, audio_path),
+                ("bot", response, response_audio)
+            ]
+            
+            # Save this conversation immediately
+            self.history_manager.save_conversation(current_conversation)
+            
+            # Update session state for display
+            st.session_state.conversation.extend(current_conversation)
             
             print(f"User: {user_input}")
             print(f"AI: {response} | Audio: {audio_path}")
@@ -42,5 +53,16 @@ class Chatbot:
         if not text.strip():
             return "Please enter a valid question"
         
-        # Reuse your existing Gemini response logic
+        response = self.gemini.generate_response(text)
+        audio_path = self.speech_processor.text_to_speech(response)
+        
+        # Create a new conversation list for this interaction
+        current_conversation = [
+            ("user", text, None),
+            ("bot", response, audio_path)
+        ]
+        
+        # Save this conversation immediately
+        self.history_manager.save_conversation(current_conversation)
+        
         return self.gemini.generate_response(text)

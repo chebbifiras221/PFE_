@@ -174,7 +174,7 @@ class GeminiModel:
         
         # For more ambiguous queries, use Gemini's validation
         try:
-            validation_prompt = f"""Analyze if this question relates to programming/software development (including languages, 
+            validation_prompt = f"""Analyze if this question relates to computer Science/programming/software development (including languages, 
                                 frameworks, algorithms, debugging, or development concepts).
 
                                 Consider:
