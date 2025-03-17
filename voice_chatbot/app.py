@@ -34,6 +34,16 @@ with st.sidebar:
     # Show history toggle
     show_history = st.checkbox("Show Conversation History")
 
+with st.sidebar:
+    st.markdown("### Performance Metrics")
+    if 'chatbot' in st.session_state:
+        stats = st.session_state.chatbot.timing_stats
+        st.text(f"Startup Time: {stats.format_time(stats.startup_time)}")
+        if stats.last_response_time:
+            st.text(f"Last Response: {stats.format_time(stats.last_response_time)}")
+            avg_time = stats.get_average_response_time()
+            st.text(f"Average Response: {stats.format_time(avg_time)}")
+
 if show_history:
     st.sidebar.markdown("### Past Conversations")
     # Get all conversations
@@ -58,13 +68,12 @@ if show_history:
 
 user_text = st.chat_input("Or type your question here...")
 if user_text:
-    # Process text input
-    response = st.session_state.chatbot.process_text_input(user_text)
+    response, response_time, audio_path = st.session_state.chatbot.process_text_input(user_text)
+    st.info(f"Response time: {st.session_state.chatbot.timing_stats.format_time(response_time)}")
     
-    # Update session state conversation for display
     current_conversation = [
         ("user", user_text, None),
-        ("bot", response, None)  # Audio path will be added by process_text_input
+        ("bot", response, audio_path)  # Use the returned audio_path
     ]
     st.session_state.conversation.extend(current_conversation)
 
