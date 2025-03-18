@@ -43,10 +43,8 @@ class GeminiModel:
         self.last_call_time = 0
         self.rate_limit_seconds = RATE_LIMIT_SECONDS
         
-        # Request cache to avoid duplicate requests
-        self.cache: Dict[str, Any] = {}
-        self.cache_size_limit = 300           # Reasonable limit
-        self.cache_ttl = timedelta(hours=12)  # Reasonable TTL
+        # Request cache to avoid duplicate requests - now without size limit
+        self.cache: Dict[str, str] = {}
         
         logger.info(f"Initialized GeminiModel with model: {model_name}")
 
@@ -217,33 +215,13 @@ class GeminiModel:
             return True
     
     def _update_cache(self, prompt: str, response: str) -> None:
-        """Update cache with basic timestamp."""
-        # Simple cache entry with timestamp
-        self.cache[prompt] = {
-            'response': response,
-            'timestamp': datetime.now()
-        }
-        
-        # Remove expired entries and maintain size limit
-        if len(self.cache) > self.cache_size_limit:
-            current_time = datetime.now()
-            # Remove expired and excess entries in one pass
-            self.cache = {
-                k: v for k, v in self.cache.items()
-                if current_time - v['timestamp'] <= self.cache_ttl
-            }
-            
-            # If still over limit, remove oldest entries
-            while len(self.cache) > self.cache_size_limit:
-                oldest_key = min(self.cache.keys(), 
-                               key=lambda k: self.cache[k]['timestamp'])
-                self.cache.pop(oldest_key)
+        """Update cache."""
+        self.cache[prompt] = response
+        logger.debug(f"Added new entry to cache (size: {len(self.cache)})")
 
     def _get_from_cache(self, prompt: str) -> Optional[str]:
-        """Get response from cache with TTL check."""
+        """Get response from cache."""
         if prompt in self.cache:
-            entry = self.cache[prompt]
-            if datetime.now() - entry['timestamp'] <= self.cache_ttl:
-                return entry['response']
-            self.cache.pop(prompt)  # Remove expired entry
+            logger.info("Cache hit - returning cached response")
+            return self.cache[prompt]
         return None
