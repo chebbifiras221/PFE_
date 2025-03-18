@@ -38,11 +38,18 @@ with st.sidebar:
     st.markdown("### Performance Metrics")
     if 'chatbot' in st.session_state:
         stats = st.session_state.chatbot.timing_stats
+        
+        # Startup time
         st.text(f"Startup Time: {stats.format_time(stats.startup_time)}")
-        if stats.last_response_time:
-            st.text(f"Last Response: {stats.format_time(stats.last_response_time)}")
-            avg_time = stats.get_average_response_time()
-            st.text(f"Average Response: {stats.format_time(avg_time)}")
+        
+        # Latest timing metrics
+        if stats.last_response_time is not None:
+            st.markdown("**Latest Request:**")
+            st.text(f"Response Generation: {stats.format_time(stats.last_response_time)}")
+            if stats.last_audio_time is not None:
+                st.text(f"Audio Generation: {stats.format_time(stats.last_audio_time)}")
+            if stats.last_total_time is not None:
+                st.text(f"Total Time: {stats.format_time(stats.last_total_time)}")
 
 if show_history:
     st.sidebar.markdown("### Past Conversations")
@@ -69,7 +76,16 @@ if show_history:
 user_text = st.chat_input("Or type your question here...")
 if user_text:
     response, response_time, audio_path = st.session_state.chatbot.process_text_input(user_text)
-    st.info(f"Response time: {st.session_state.chatbot.timing_stats.format_time(response_time)}")
+    # Show total processing time
+    total_time = st.session_state.chatbot.timing_stats.last_total_time
+    if total_time is not None:
+        st.info(f"Total processing time: {st.session_state.chatbot.timing_stats.format_time(total_time)}")
+    else:
+        st.info(f"Processing time: {st.session_state.chatbot.timing_stats.format_time(response_time)}")
+    
+    # Show message when no audio is generated
+    if response.startswith("Rate limit") or response.startswith("I specialize"):
+        st.warning("No audio response generated for this message.")
     
     current_conversation = [
         ("user", user_text, None),
